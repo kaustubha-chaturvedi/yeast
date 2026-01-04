@@ -63,29 +63,50 @@ jobs:
   publish:
     runs-on: ubuntu-latest
     needs: release
+    permissions:
+      contents: write
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Create Git tag
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git fetch --tags
-          git tag ${{ needs.release.outputs.tag }}
-          git push origin ${{ needs.release.outputs.tag }}
+          git fetch --tags || true
+          # Check if tag already exists
+          if git rev-parse "${{ needs.release.outputs.tag }}" >/dev/null 2>&1; then
+            echo "Tag ${{ needs.release.outputs.tag }} already exists, skipping creation"
+          else
+            git tag ${{ needs.release.outputs.tag }}
+            git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
+            git push origin ${{ needs.release.outputs.tag }}
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Download artifacts
+      - name: Download all artifacts
         uses: actions/download-artifact@v4
         with:
           path: build
+          pattern: binaries-*
+          merge-multiple: true
+
+      - name: Prepare release files
+        run: |
+          mkdir -p release
+          find build -type f -name "yst-{{NAME}}-*" -exec cp {} release/ \;
+          echo "Files to upload:"
+          ls -lh release/
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ needs.release.outputs.tag }}
           name: Release ${{ needs.release.outputs.tag }}
-          files: build/yst-{{NAME}}-*
+          files: release/*
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
