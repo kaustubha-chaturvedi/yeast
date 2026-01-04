@@ -1,13 +1,12 @@
 package plugins
 
 import (
+	"fmt"
 	"io/fs"
 	"os"
 	"path/filepath"
 	"runtime"
 	"strings"
-
-	"github.com/kaustubha-chaturvedi/yeast/internal/utils"
 )
 
 
@@ -22,7 +21,7 @@ func copyTemplates(targetDir, name, domain, alias string) error {
 
 		data, err := os.ReadFile(path)
 		if err != nil {
-			return utils.HandleError("read template", err)
+			return fmt.Errorf("read template: %w", err)
 		}
 
 		content := string(data)
@@ -35,7 +34,7 @@ func copyTemplates(targetDir, name, domain, alias string) error {
 		targetPath := filepath.Join(targetDir, relPath)
 
 		if err := os.WriteFile(targetPath, []byte(content), 0644); err != nil {
-			return utils.HandleError("write template", err)
+			return fmt.Errorf("write template: %w", err)
 		}
 
 		return nil
@@ -45,32 +44,27 @@ func copyTemplates(targetDir, name, domain, alias string) error {
 
 func CreateNew(name, alias, domain, targetDir string) error {
 	if name == "" {
-		return utils.HandleErrorf("create", "name is required")
+		return fmt.Errorf("create: name is required")
 	}
 	if alias == "" {
-		return utils.HandleErrorf("create", "alias is required")
+		return fmt.Errorf("create: alias is required")
 	}
 	if domain == "" {
-		return utils.HandleErrorf("create", "domain is required")
+		return fmt.Errorf("create: domain is required")
 	}
 
 	if targetDir == "" {
 		cwd, err := os.Getwd()
 		if err != nil {
-			return utils.HandleError("get working directory", err)
+			return fmt.Errorf("get working directory: %w", err)
 		}
 		targetDir = filepath.Join(cwd, "yst-"+name)
 	}
 
 	if err := os.MkdirAll(targetDir, 0755); err != nil {
-		return utils.HandleError("create directory", err)
+		return fmt.Errorf("create directory: %w", err)
 	}
 
-	if err := copyTemplates(targetDir, name, domain, alias); err != nil {
-		return err
-	}
-
-	utils.Logf("Created plugin skeleton: %s", targetDir)
-	return nil
+	return copyTemplates(targetDir, name, domain, alias)
 }
 

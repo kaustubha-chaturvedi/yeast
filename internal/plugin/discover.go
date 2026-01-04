@@ -4,9 +4,15 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-
-	"github.com/kaustubha-chaturvedi/yeast/internal/utils"
 )
+
+func isExecutable(path string) bool {
+	info, err := os.Stat(path)
+	if err != nil {
+		return false
+	}
+	return info.Mode().IsRegular() && (info.Mode().Perm()&0111 != 0)
+}
 
 func ScanPathForPlugins() ([]string, error) {
 	var plugins []string
@@ -40,7 +46,7 @@ func ScanPathForPlugins() ([]string, error) {
 			}
 
 			fullPath := filepath.Join(dir, entry.Name())
-			if utils.IsExecutable(fullPath) {
+			if isExecutable(fullPath) {
 				plugins = append(plugins, fullPath)
 			}
 		}

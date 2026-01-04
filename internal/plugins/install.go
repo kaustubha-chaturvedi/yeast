@@ -11,7 +11,6 @@ import (
 	"strings"
 
 	"github.com/kaustubha-chaturvedi/yeast/internal/plugin"
-	"github.com/kaustubha-chaturvedi/yeast/internal/utils"
 )
 
 type installResponse struct {
@@ -22,47 +21,47 @@ type installResponse struct {
 func Install(pluginTag string) error {
 	parts := strings.Split(pluginTag, ":")
 	if len(parts) != 2 || parts[0] == "" || parts[1] == "" {
-		return utils.HandleErrorf("install", "invalid format. Use 'author:plugin-name'")
+		return fmt.Errorf("install: invalid format. Use 'author:plugin-name'")
 	}
 
 	author, pluginName := parts[0], parts[1]
 	apiURL := fmt.Sprintf("https://yeast.kaustubha.work/plugins/%s:%s?os=%s", author, pluginName, runtime.GOOS)
 
-	utils.Printf("Fetching plugin info for %s...\n", pluginTag)
+	fmt.Printf("Fetching plugin info for %s...\n", pluginTag)
 	resp, err := http.Get(apiURL)
 	if err != nil {
-		return utils.HandleErrorf("install", "failed to fetch: %v", err)
+		return fmt.Errorf("install: failed to fetch: %w", err)
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return utils.HandleErrorf("install", "plugin not found (status: %d)", resp.StatusCode)
+		return fmt.Errorf("install: plugin not found (status: %d)", resp.StatusCode)
 	}
 
 	var apiResp installResponse
 	if err := json.NewDecoder(resp.Body).Decode(&apiResp); err != nil {
-		return utils.HandleErrorf("install", "invalid API response: %v", err)
+		return fmt.Errorf("install: invalid API response: %w", err)
 	}
 
 	if apiResp.Error != "" {
-		return utils.HandleErrorf("install", "API error: %s", apiResp.Error)
+		return fmt.Errorf("install: API error: %s", apiResp.Error)
 	}
 	if apiResp.DownloadURL == "" {
-		return utils.HandleErrorf("install", "no download URL")
+		return fmt.Errorf("install: no download URL")
 	}
 
 	pluginPath := filepath.Join(plugin.GetBinaryDir(), fmt.Sprintf("yst-%s", pluginName))
-	utils.Printf("Downloading to %s...\n", pluginPath)
+	fmt.Printf("Downloading to %s...\n", pluginPath)
 
 	if err := downloadFile(apiResp.DownloadURL, pluginPath); err != nil {
-		return utils.HandleErrorf("install", "download failed: %v", err)
+		return fmt.Errorf("install: download failed: %w", err)
 	}
 
 	if err := os.Chmod(pluginPath, 0755); err != nil {
-		return utils.HandleErrorf("install", "chmod failed: %v", err)
+		return fmt.Errorf("install: chmod failed: %w", err)
 	}
 
-	utils.Printf("Installed: %s\n", pluginPath)
+	fmt.Printf("Installed: %s\n", pluginPath)
 	plugin.InvalidateIndex()
 	plugin.BuildIndex()
 	return nil

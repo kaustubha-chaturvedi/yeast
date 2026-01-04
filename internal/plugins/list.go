@@ -1,16 +1,16 @@
 package plugins
 
 import (
+	"fmt"
 	"sort"
 
 	"github.com/kaustubha-chaturvedi/yeast/internal/plugin"
-	"github.com/kaustubha-chaturvedi/yeast/internal/utils"
 )
 
 func List() error {
 	plugin.InvalidateIndex()
 	if err := plugin.BuildIndex(); err != nil {
-		utils.Printf("[ERROR] Failed to build index: %v\n", err)
+		fmt.Printf("[ERROR] Failed to build index: %v\n", err)
 		return err
 	}
 
@@ -25,7 +25,7 @@ func List() error {
 	})
 
 	if len(plugins) == 0 {
-		utils.Printf("No plugins found in PATH\n")
+		fmt.Printf("No plugins found in PATH\n")
 		return nil
 	}
 
@@ -33,17 +33,17 @@ func List() error {
 		return plugins[i].alias < plugins[j].alias
 	})
 
-	utils.Printf("Found %d plugin(s)\n", len(plugins))
+	fmt.Printf("Found %d plugin(s)\n", len(plugins))
 	for _, p := range plugins {
 		if meta, err := plugin.GetMetadata(p.path); err == nil {
 			line := "  " + p.alias
 			if meta.Domain != "" {
 				line += " (domain: " + meta.Domain + ")"
 			}
-			utils.Printf("%s\n", line)
-			utils.Printf("Path: %s\n", p.path)
+			fmt.Printf("%s\n", line)
+			fmt.Printf("Path: %s\n", p.path)
 		} else {
-			utils.Printf("  %s - %s\n", p.alias, p.path)
+			fmt.Printf("  %s - %s\n", p.alias, p.path)
 		}
 	}
 	return nil

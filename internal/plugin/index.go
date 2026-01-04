@@ -1,11 +1,10 @@
 package plugin
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"sync"
-
-	"github.com/kaustubha-chaturvedi/yeast/internal/utils"
 )
 
 var (
@@ -21,7 +20,7 @@ func init() {
 		cacheDir = "."
 		return
 	}
-	cacheDir = utils.GetDir(execPath)
+	cacheDir = filepath.Dir(execPath)
 }
 
 func BuildIndex() error {
@@ -56,7 +55,7 @@ func FindPlugin(alias string) (string, error) {
 	if !indexBuilt {
 		indexMutex.RUnlock()
 		if err := BuildIndex(); err != nil {
-			return "", utils.HandleError("build index", err)
+			return "", fmt.Errorf("build index: %w", err)
 		}
 		indexMutex.RLock()
 	}
