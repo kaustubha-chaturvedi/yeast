@@ -33,6 +33,10 @@ func copyTemplates(targetDir, name, domain, alias string) error {
 		relPath = strings.TrimSuffix(relPath, ".template")
 		targetPath := filepath.Join(targetDir, relPath)
 
+		if err := os.MkdirAll(filepath.Dir(targetPath), 0755); err != nil {
+			return fmt.Errorf("create directory: %w", err)
+		}
+
 		if err := os.WriteFile(targetPath, []byte(content), 0644); err != nil {
 			return fmt.Errorf("write template: %w", err)
 		}

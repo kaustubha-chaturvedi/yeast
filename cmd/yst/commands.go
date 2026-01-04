@@ -26,7 +26,7 @@ func createPluginsCmd() *cobra.Command {
 	cmd.AddCommand(
 		createCmd,
 		&cobra.Command{
-			Use:   "install <author:plugin-name>",
+			Use:   "install <author:plugin-alias>",
 			Short: "Install a plugin from the registry",
 			Args:  cobra.ExactArgs(1),
 			RunE:  func(_ *cobra.Command, args []string) error { return plugins.Install(args[0]) },
@@ -35,6 +35,11 @@ func createPluginsCmd() *cobra.Command {
 			Use:   "list",
 			Short: "List all installed plugins",
 			RunE:  func(*cobra.Command, []string) error { return plugins.List() },
+		},
+		&cobra.Command{
+			Use:   "publish",
+			Short: "Publish plugin to the registry",
+			RunE:  func(*cobra.Command, []string) error { return plugins.Publish() },
 		},
 	)
 	return cmd
