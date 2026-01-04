@@ -8,11 +8,7 @@ YST plugin for {{DOMAIN}} operations.
 yst plugins build
 ```
 
-## Installation
+## Edit the go mod with you github username and try publishing the plugin to be listed on index for download
 
-Copy the binary to a directory in your PATH:
-
-```bash
-cp yst-{{NAME}} /usr/local/bin/
-```
+## To run locally copy plugin to your `yeast` directory 
 

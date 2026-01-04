@@ -24,7 +24,6 @@ func main() {
 	rootCmd.AddCommand(createPluginsCmd())
 
 	if len(os.Args) > 1 && os.Args[1] != "plugins" {
-		plugin.BuildIndex()
 		if _, err := plugin.FindPlugin(os.Args[1]); err == nil {
 			cli.HandlePluginCommand(os.Args[1:])
 			utils.Close()

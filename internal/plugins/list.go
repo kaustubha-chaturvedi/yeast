@@ -14,30 +14,36 @@ func List() error {
 		return err
 	}
 
-	index := plugin.GetAliasIndex()
-	if len(index) == 0 {
+	type pluginInfo struct {
+		alias string
+		path  string
+	}
+	var plugins []pluginInfo
+
+	plugin.ForEachPlugin(func(alias, path string) {
+		plugins = append(plugins, pluginInfo{alias, path})
+	})
+
+	if len(plugins) == 0 {
 		utils.Printf("No plugins found in PATH\n")
 		return nil
 	}
 
-	aliases := make([]string, 0, len(index))
-	for alias := range index {
-		aliases = append(aliases, alias)
-	}
-	sort.Strings(aliases)
+	sort.Slice(plugins, func(i, j int) bool {
+		return plugins[i].alias < plugins[j].alias
+	})
 
-	utils.Printf("Found %d plugin(s)\n", len(aliases))
-	for _, alias := range aliases {
-		path := index[alias]
-		if meta, err := plugin.GetMetadata(path); err == nil {
-			line := "  " + alias
+	utils.Printf("Found %d plugin(s)\n", len(plugins))
+	for _, p := range plugins {
+		if meta, err := plugin.GetMetadata(p.path); err == nil {
+			line := "  " + p.alias
 			if meta.Domain != "" {
 				line += " (domain: " + meta.Domain + ")"
 			}
 			utils.Printf("%s\n", line)
-			utils.Printf("    Path: %s\n", path)
+			utils.Printf("Path: %s\n", p.path)
 		} else {
-			utils.Printf("  %s - %s\n", alias, path)
+			utils.Printf("  %s - %s\n", p.alias, p.path)
 		}
 	}
 	return nil
