@@ -9,15 +9,26 @@ import (
 )
 
 func ScanPathForPlugins() ([]string, error) {
-	pathEnv := os.Getenv("PATH")
-	if pathEnv == "" {
-		return nil, nil
+	var plugins []string
+	var dirsToScan []string
+
+	if cacheDir != "" && cacheDir != "." {
+		dirsToScan = append(dirsToScan, cacheDir)
 	}
 
-	var plugins []string
-	paths := strings.Split(pathEnv, string(os.PathListSeparator))
+	pathEnv := os.Getenv("PATH")
+	if pathEnv != "" {
+		pathDirs := strings.Split(pathEnv, string(os.PathListSeparator))
+		dirsToScan = append(dirsToScan, pathDirs...)
+	}
 
-	for _, dir := range paths {
+	seen := make(map[string]bool)
+	for _, dir := range dirsToScan {
+		if seen[dir] {
+			continue
+		}
+		seen[dir] = true
+
 		entries, err := os.ReadDir(dir)
 		if err != nil {
 			continue

@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"path/filepath"
@@ -47,4 +48,12 @@ func CloseLogger() {
 	if appFile != nil && appFile != os.Stderr {
 		appFile.Close()
 	}
+}
+
+func Print(message string) {
+	fmt.Print(message)
+}
+
+func Printf(format string, args ...interface{}) {
+	fmt.Printf(format, args...)
 }

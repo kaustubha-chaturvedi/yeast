@@ -8,25 +8,10 @@ import (
 )
 
 type PluginMetadata struct {
-	Name     string            `json:"name"`
-	Domain   string            `json:"domain"`
-	Alias    string            `json:"alias,omitempty"`
-	Version  string            `json:"version,omitempty"`
-	Commands []CommandMetadata `json:"commands"`
-}
-
-type CommandMetadata struct {
-	Name        string            `json:"name"`
-	Description string            `json:"description"`
-	Flags       []FlagMetadata    `json:"flags,omitempty"`
-	Examples    []string          `json:"examples,omitempty"`
-}
-
-type FlagMetadata struct {
-	Name        string `json:"name"`
-	Description string `json:"description"`
-	Type        string `json:"type,omitempty"`
-	Default     string `json:"default,omitempty"`
+	Name    string `json:"name"`
+	Domain  string `json:"domain"`
+	Alias   string `json:"alias"`
+	Version string `json:"version,omitempty"`
 }
 
 func GetMetadata(pluginPath string) (*PluginMetadata, error) {

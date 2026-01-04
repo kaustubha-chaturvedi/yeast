@@ -1,42 +1,39 @@
 package cli
 
 import (
+	"os"
+
 	"github.com/kaustubha-chaturvedi/yeast/internal/plugin"
 	"github.com/kaustubha-chaturvedi/yeast/internal/utils"
 )
 
-func HasHelpCommand(alias string) bool {
-	pluginPath, err := plugin.FindPlugin(alias)
-	if err != nil {
-		return false
+func HandlePluginCommand(args []string) {
+	if len(args) == 0 {
+		utils.Printf("[ERROR] No alias specified\n")
+		os.Exit(1)
 	}
-	
-	meta, err := plugin.GetMetadata(pluginPath)
-	if err != nil {
-		return false
-	}
-	
-	for _, cmd := range meta.Commands {
-		if cmd.Name == "help" {
-			return true
+
+	alias, rest := args[0], args[1:]
+	if len(rest) == 0 {
+		pluginPath, err := plugin.FindPlugin(alias)
+		if err != nil {
+			utils.Printf("[ERROR] Plugin not found: %s\n", alias)
+			os.Exit(1)
 		}
+		plugin.Execute(pluginPath, []string{"-h"})
+		return
 	}
-	return false
+
+	if err := Route(alias, rest); err != nil {
+		os.Exit(1)
+	}
 }
 
-func Route(domain string, args []string) error {
-	pluginPath, err := plugin.FindPlugin(domain)
+func Route(alias string, args []string) error {
+	pluginPath, err := plugin.FindPlugin(alias)
 	if err != nil {
-		return utils.HandleErrorf("route", "plugin not found: %s", domain)
+		utils.Printf("[ERROR] Plugin not found: %s\n", alias)
+		return err
 	}
-
-	if len(args) == 0 {
-		return utils.HandleErrorf("route", "no command specified")
-	}
-
-	if args[0] == "metadata" {
-		return nil
-	}
-
 	return utils.HandleError("execute plugin", plugin.Execute(pluginPath, args))
 }

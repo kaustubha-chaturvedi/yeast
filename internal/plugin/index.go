@@ -36,10 +36,13 @@ func BuildIndex() error {
 	}
 
 	cached, _ := loadCached()
-	if cached != nil {
-		for alias, path := range cached {
-			meta, err := GetMetadata(path)
-			if err == nil && validatePlugin(meta) {
+	if cached == nil {
+		cached = make(map[string]string)
+	}
+	
+	for alias, path := range cached {
+		if _, err := os.Stat(path); err == nil {
+			if meta, err := GetMetadata(path); err == nil && validatePlugin(meta) {
 				aliasIndex[alias] = path
 			}
 		}
@@ -82,7 +85,9 @@ func InvalidateIndex() {
 	defer indexMutex.Unlock()
 	indexBuilt = false
 	aliasIndex = make(map[string]string)
-	clearCacheFiles()
+	if err := os.Remove(getCachePath()); err != nil {
+		utils.Printf("[ERROR] Failed to invalidate index: %v\n", err)
+	}
 }
 
 func FindPlugin(alias string) (string, error) {

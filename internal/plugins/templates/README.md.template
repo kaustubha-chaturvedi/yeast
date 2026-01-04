@@ -1,0 +1,18 @@
+# yst-{{NAME}}
+
+YST plugin for {{DOMAIN}} operations.
+
+## Building
+
+```bash
+yst plugins build
+```
+
+## Installation
+
+Copy the binary to a directory in your PATH:
+
+```bash
+cp yst-{{NAME}} /usr/local/bin/
+```
+

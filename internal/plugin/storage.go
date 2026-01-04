@@ -32,6 +32,9 @@ func loadCached() (map[string]string, error) {
 	
 	data, err := os.ReadFile(cachePath)
 	if err != nil {
+		if os.IsNotExist(err) {
+			return nil, nil
+		}
 		return nil, utils.HandleError("read cache", err)
 	}
 
@@ -56,8 +59,3 @@ func loadCached() (map[string]string, error) {
 
 	return result, nil
 }
-
-func clearCacheFiles() error {
-	return os.Remove(getCachePath())
-}
-

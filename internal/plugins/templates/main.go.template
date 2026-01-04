@@ -1,0 +1,63 @@
+package main
+
+import (
+	"encoding/json"
+	"fmt"
+	"os"
+
+	"github.com/spf13/cobra"
+)
+
+var embeddedMetadata = `{"name":"{{NAME}}","domain":"{{DOMAIN}}","alias":"{{ALIAS}}","version":"0.1.0"}`
+
+var rootCmd = &cobra.Command{
+	Use:   "yst-{{NAME}}",
+	Short: "{{NAME}} plugin",
+	Long:  "Plugin for {{DOMAIN}} operations",
+	SilenceErrors: true,
+	SilenceUsage:  true,
+	CompletionOptions: cobra.CompletionOptions{
+		DisableDefaultCmd: true,
+	},
+}
+
+func main() {
+	if len(os.Args) > 1 && os.Args[1] == "__yst_metadata" {
+		meta := getMetadata()
+		json.NewEncoder(os.Stdout).Encode(meta)
+		return
+	}
+
+	if err := rootCmd.Execute(); err != nil {
+		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+		os.Exit(1)
+	}
+}
+
+func getMetadata() map[string]interface{} {
+	if embeddedMetadata != "" {
+		var meta map[string]interface{}
+		if err := json.Unmarshal([]byte(embeddedMetadata), &meta); err == nil {
+			return meta
+		}
+	}
+	return map[string]interface{}{
+		"name":     "{{NAME}}",
+		"domain":   "{{DOMAIN}}",
+		"alias":    "{{ALIAS}}",
+		"version":  "0.1.0",
+		"commands": []map[string]interface{}{},
+	}
+}
+
+func init() {
+	exampleCmd := &cobra.Command{
+		Use:   "example",
+		Short: "Example command",
+		Run: func(cmd *cobra.Command, args []string) {
+			fmt.Println("Example command executed")
+		},
+	}
+	rootCmd.AddCommand(exampleCmd)
+}
+
