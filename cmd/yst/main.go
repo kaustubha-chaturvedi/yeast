@@ -54,7 +54,7 @@ func handlePluginCommand(args []string) {
 	}
 
 	if len(rest) == 0 {
-		rest = []string{"-h"}
+		rest = []string{"--help"}
 	}
 
 	cmd := exec.Command(pluginPath, rest...)
