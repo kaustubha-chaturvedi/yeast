@@ -158,7 +158,7 @@ func validateMetadata(meta *pluginMetadata) error {
 }
 
 func checkAliasAvailability(alias string) error {
-	url := fmt.Sprintf("https://yeast.kaustubha.work/valid-alias?alias=%s", alias)
+	url := fmt.Sprintf("https://yeast.kaustubha.work/api/valid-alias?alias=%s", alias)
 	resp, err := http.Get(url)
 	if err != nil {
 		return fmt.Errorf("check alias availability: %w", err)
@@ -190,7 +190,7 @@ func sendPublishRequest(req publishRequest) error {
 		return fmt.Errorf("marshal request: %w", err)
 	}
 
-	resp, err := http.Post("https://yeast.kaustubha.work/publish", "application/json", bytes.NewBuffer(jsonData))
+	resp, err := http.Post("https://yeast.kaustubha.work/api/publish", "application/json", bytes.NewBuffer(jsonData))
 	if err != nil {
 		return fmt.Errorf("send request: %w", err)
 	}
