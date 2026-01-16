@@ -1,4 +1,4 @@
-module github.com/your-username/yst-{{NAME}}
+module github.com/your-username/yst-{{ALIAS}}
 
 go 1.25.4
 
