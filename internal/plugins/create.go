@@ -62,7 +62,7 @@ func CreateNew(name, alias, domain, targetDir string) error {
 		if err != nil {
 			return fmt.Errorf("get working directory: %w", err)
 		}
-		targetDir = filepath.Join(cwd, "yst-"+name)
+		targetDir = filepath.Join(cwd, "yst-"+alias)
 	}
 
 	if err := os.MkdirAll(targetDir, 0755); err != nil {

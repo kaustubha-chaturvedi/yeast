@@ -11,8 +11,7 @@ import (
 var embeddedMetadata = `{"name":"{{NAME}}","domain":"{{DOMAIN}}","alias":"{{ALIAS}}","version":"0.1.0"}`
 
 var rootCmd = &cobra.Command{
-	Use:   "yst-{{NAME}}",
-	Short: "{{NAME}} plugin",
+	Use:   "yst-{{ALIAS}}",
 	Long:  "Plugin for {{DOMAIN}} operations",
 	SilenceErrors: true,
 	SilenceUsage:  true,
