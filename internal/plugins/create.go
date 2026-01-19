@@ -1,25 +1,24 @@
 package plugins
 
 import (
+	"embed"
 	"fmt"
 	"io/fs"
 	"os"
 	"path/filepath"
-	"runtime"
 	"strings"
 )
 
+//go:embed templates/*
+var templateFS embed.FS
 
 func copyTemplates(targetDir, name, domain, alias string) error {
-	_, filename, _, _ := runtime.Caller(0)
-	templatePath := filepath.Join(filepath.Dir(filename), "templates")
-
-	return filepath.WalkDir(templatePath, func(path string, d fs.DirEntry, err error) error {
+	return fs.WalkDir(templateFS, "templates", func(path string, d fs.DirEntry, err error) error {
 		if err != nil || d.IsDir() {
 			return err
 		}
 
-		data, err := os.ReadFile(path)
+		data, err := templateFS.ReadFile(path)
 		if err != nil {
 			return fmt.Errorf("read template: %w", err)
 		}
@@ -29,7 +28,7 @@ func copyTemplates(targetDir, name, domain, alias string) error {
 		content = strings.ReplaceAll(content, "{{DOMAIN}}", domain)
 		content = strings.ReplaceAll(content, "{{ALIAS}}", alias)
 
-		relPath, _ := filepath.Rel(templatePath, path)
+		relPath := strings.TrimPrefix(path, "templates/")
 		relPath = strings.TrimSuffix(relPath, ".template")
 		targetPath := filepath.Join(targetDir, relPath)
 
@@ -44,7 +43,6 @@ func copyTemplates(targetDir, name, domain, alias string) error {
 		return nil
 	})
 }
-
 
 func CreateNew(name, alias, domain, targetDir string) error {
 	if name == "" {
@@ -71,4 +69,3 @@ func CreateNew(name, alias, domain, targetDir string) error {
 
 	return copyTemplates(targetDir, name, domain, alias)
 }
-
