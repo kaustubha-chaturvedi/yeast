@@ -23,6 +23,16 @@ func createPluginsCmd() *cobra.Command {
 	createCmd.MarkFlagRequired("alias")
 	createCmd.MarkFlagRequired("domain")
 
+	publishCmd := &cobra.Command{
+		Use:   "publish",
+		Short: "Publish plugin to the registry",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			binaryPath, _ := cmd.Flags().GetString("binary")
+			return plugins.Publish(binaryPath)
+		},
+	}
+	publishCmd.Flags().StringP("binary", "b", "", "Path to prebuilt plugin binary (skip build)")
+
 	cmd.AddCommand(
 		createCmd,
 		&cobra.Command{
@@ -36,11 +46,7 @@ func createPluginsCmd() *cobra.Command {
 			Short: "List all installed plugins",
 			RunE:  func(*cobra.Command, []string) error { return plugins.List() },
 		},
-		&cobra.Command{
-			Use:   "publish",
-			Short: "Publish plugin to the registry",
-			RunE:  func(*cobra.Command, []string) error { return plugins.Publish() },
-		},
+		publishCmd,
 	)
 	return cmd
 }

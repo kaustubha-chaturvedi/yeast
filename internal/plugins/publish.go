@@ -35,7 +35,7 @@ type publishResponse struct {
 
 const minWords, maxWords int = 25, 256
 
-func Publish() error {
+func Publish(binPath string) error {
 	cwd, err := os.Getwd()
 	if err != nil {
 		return fmt.Errorf("publish: get working directory: %w", err)
@@ -46,12 +46,12 @@ func Publish() error {
 		return fmt.Errorf("publish: read go.mod: %w", err)
 	}
 
-	meta, err := getMetadataFromSource(cwd)
+	meta, err := getMetadataFromSource(cwd, binPath)
 	if err != nil {
 		return fmt.Errorf("publish: get metadata: %w", err)
 	}
 
-		if err := validateMetadata(meta); err != nil {
+	if err := validateMetadata(meta); err != nil {
 		return fmt.Errorf("publish: %w", err)
 	}
 
@@ -101,26 +101,31 @@ func readModuleName(dir string) (string, error) {
 	return "", fmt.Errorf("module name not found in go.mod")
 }
 
-func getMetadataFromSource(dir string) (*pluginMetadata, error) {
-	mainPath := filepath.Join(dir, "main.go")
-	if _, err := os.Stat(mainPath); err != nil {
-		return nil, fmt.Errorf("main.go not found in current directory")
-	}
+func getMetadataFromSource(dir string, binPath string) (*pluginMetadata, error) {
+	var tempBin string
+	if binPath == "" {
+		mainPath := filepath.Join(dir, "main.go")
+		if _, err := os.Stat(mainPath); err != nil {
+			return nil, fmt.Errorf("main.go not found in current directory")
+		}
 
-	tempBin := filepath.Join(dir, ".yst-temp-plugin")
-	if runtime.GOOS == "windows" {
-		tempBin += ".exe"
-	}
-	defer func() {
-		os.Remove(tempBin)
-	}()
+		tempBin = filepath.Join(dir, ".yst-temp-plugin")
+		if runtime.GOOS == "windows" {
+			tempBin += ".exe"
+		}
+		defer func() {
+			os.Remove(tempBin)
+		}()
 
-	cmd := exec.Command("go", "build", "-o", tempBin, ".")
-	cmd.Dir = dir
-	var stderr bytes.Buffer
-	cmd.Stderr = &stderr
-	if err := cmd.Run(); err != nil {
-		return nil, fmt.Errorf("build failed: %s", stderr.String())
+		cmd := exec.Command("go", "build", "-o", tempBin, ".")
+		cmd.Dir = dir
+		var stderr bytes.Buffer
+		cmd.Stderr = &stderr
+		if err := cmd.Run(); err != nil {
+			return nil, fmt.Errorf("build failed: %s \n %s", stderr.String(),"try providing brebuild binary with publish -b/--binary command as publish can only build nod CGO builds")
+		}
+	} else {
+		tempBin = binPath
 	}
 
 	metaCmd := exec.Command(tempBin, "__yst_metadata")
@@ -238,7 +243,7 @@ func promptDescription() (string, error) {
 			fmt.Printf("description has only %d words. Please enter at between %d and %d words.", wordCount, minWords, maxWords)
 			continue
 		}
-		
+
 		return description, nil
 	}
 }
