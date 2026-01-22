@@ -122,7 +122,7 @@ func getMetadataFromSource(dir string, binPath string) (*pluginMetadata, error) 
 		var stderr bytes.Buffer
 		cmd.Stderr = &stderr
 		if err := cmd.Run(); err != nil {
-			return nil, fmt.Errorf("build failed: %s \n %s", stderr.String(),"try providing brebuild binary with publish -b/--binary command as publish can only build nod CGO builds")
+			return nil, fmt.Errorf("build failed: %s \n %s", stderr.String(),"try providing prebuild binary with publish -b/--binary command as publish can only build non CGO builds")
 		}
 	} else {
 		tempBin = binPath
