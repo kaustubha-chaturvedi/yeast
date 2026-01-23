@@ -4,12 +4,17 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"runtime"
 )
 
 func isExecutable(path string) bool {
 	info, err := os.Stat(path)
 	if err != nil {
 		return false
+	}
+
+	if runtime.GOOS == "windows" {
+		return strings.EqualFold(filepath.Ext(path), ".exe")
 	}
 	return info.Mode().IsRegular() && (info.Mode().Perm()&0111 != 0)
 }
@@ -40,10 +45,10 @@ func ScanPathForPlugins() ([]string, error) {
 			continue
 		}
 
-		for _, entry := range entries {
-			if entry.IsDir() || !strings.HasPrefix(entry.Name(), "yst-") {
-				continue
-			}
+        for _, entry := range entries {
+            if entry.IsDir() || !strings.HasPrefix(entry.Name(), "yst-") {
+                continue
+            }
 
 			fullPath := filepath.Join(dir, entry.Name())
 			if isExecutable(fullPath) {
